@@ -2,8 +2,6 @@ package com.example.service;
 
 import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
-import com.example.fixture.PostEntityFixture;
-import com.example.fixture.UserEntityFixture;
 import com.example.model.entity.PostEntity;
 import com.example.model.entity.UserEntity;
 import com.example.repository.PostEntityRepository;
@@ -59,56 +57,4 @@ class PostServiceTest {
         SnsApplicationException e = assertThrows(SnsApplicationException.class, () -> postService.create(title, body, username));
         assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
     }
-
-    @Test
-    void 포스트수정이_성공한경우() {
-        String title = "title";
-        String body = "body";
-        String username = "username";
-        Integer postId = 1;
-
-        PostEntity postEntity = PostEntityFixture.get(username, postId, 1);
-        UserEntity user = postEntity.getUser();
-
-        when(userEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
-        when(postEntityRepository.saveAndFlush(postEntity)).thenReturn(postEntity);
-
-        Assertions.assertDoesNotThrow(() -> postService.modify(title, body, username, postId));
-    }
-
-    @Test
-    void 포스트수정시_포스트가_존재하지않는_경우() {
-        String title = "title";
-        String body = "body";
-        String username = "username";
-        Integer postId = 1;
-
-        PostEntity postEntity = PostEntityFixture.get(username, postId, 1);
-        UserEntity user = postEntity.getUser();
-
-        when(userEntityRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(postEntityRepository.findById(postId)).thenReturn(Optional.empty());
-
-        SnsApplicationException e = assertThrows(SnsApplicationException.class, () -> postService.modify(title, body, username, postId));
-        Assertions.assertEquals(ErrorCode.POST_NOT_FOUND, e.getErrorCode());
-    }
-
-    @Test
-    void 포스트수정시_권한이_없는_경우() {
-        String title = "title";
-        String body = "body";
-        String username = "username";
-        Integer postId = 1;
-
-        PostEntity postEntity = PostEntityFixture.get(username, postId, 1);
-        UserEntity writer = UserEntityFixture.get("username1", "password1", 2);
-
-        when(userEntityRepository.findByUsername(username)).thenReturn(Optional.of(writer));
-        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
-
-        SnsApplicationException e = assertThrows(SnsApplicationException.class, () -> postService.modify(title, body, username, postId));
-        Assertions.assertEquals(ErrorCode.INVALID_PERMISSION, e.getErrorCode());
-    }
-
 }
