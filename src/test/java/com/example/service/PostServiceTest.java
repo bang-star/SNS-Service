@@ -4,9 +4,11 @@ import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
 import com.example.fixture.PostEntityFixture;
 import com.example.fixture.UserEntityFixture;
+import com.example.model.entity.CommentEntity;
 import com.example.model.entity.LikeEntity;
 import com.example.model.entity.PostEntity;
 import com.example.model.entity.UserEntity;
+import com.example.repository.CommentEntityRepository;
 import com.example.repository.LikeEntityRepository;
 import com.example.repository.PostEntityRepository;
 import com.example.repository.UserEntityRepository;
@@ -33,11 +35,9 @@ class PostServiceTest {
     @MockBean
     private PostEntityRepository postEntityRepository;
 
-    @MockBean
-    private UserEntityRepository userEntityRepository;
-
-    @MockBean
-    private LikeEntityRepository likeEntityRepository;
+    @MockBean private UserEntityRepository userEntityRepository;
+    @MockBean private LikeEntityRepository likeEntityRepository;
+    @MockBean private CommentEntityRepository commentEntityRepository;
 
     @Test
     void 포스트작성이_성공한경우() {
@@ -236,6 +236,57 @@ class PostServiceTest {
         when(likeEntityRepository.findByUserAndPost(user, post)).thenReturn(Optional.empty());
 
         Assertions.assertDoesNotThrow(() -> postService.like(postId, username));
+    }
+
+    @Test
+    void 댓글생성이_성공한경우(){
+        Integer postId = 1;
+        String comment = "comment";
+        UserEntity user = mock(UserEntity.class);
+        PostEntity post = mock(PostEntity.class);
+
+        when(userEntityRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Assertions.assertDoesNotThrow(() -> postService.comment(postId, "username", comment));
+    }
+
+    @Test
+    void 댓글생성시_포스트가_존재하지않는_경우() {
+        Integer postId = 1;
+        String comment = "comment";
+        UserEntity user = mock(UserEntity.class);
+
+        when(userEntityRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.empty());
+
+        SnsApplicationException e = assertThrows(SnsApplicationException.class, () -> postService.comment(postId, "username", comment));
+        Assertions.assertEquals(ErrorCode.POST_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    void 댓글생성시_요청한유저가_존재하지않은경우() {
+        Integer postId = 1;
+        String comment = "comment";
+        PostEntity post = mock(PostEntity.class);
+
+        when(userEntityRepository.findByUsername(any())).thenReturn(Optional.empty());
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        SnsApplicationException e = assertThrows(SnsApplicationException.class, () -> postService.comment(postId, "username", comment));
+        Assertions.assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    void 댓글리스트요청시_성공한경우() {
+        Integer postId = 1;
+        PostEntity post = mock(PostEntity.class);
+        Pageable pageable = mock(Pageable.class);
+
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(commentEntityRepository.findAllByPost(post, pageable)).thenReturn(Page.empty());
+
+        Assertions.assertDoesNotThrow(() -> postService.getComments(postId, pageable));
     }
 
 }

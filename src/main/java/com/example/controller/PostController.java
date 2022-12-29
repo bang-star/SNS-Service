@@ -1,9 +1,12 @@
 package com.example.controller;
 
+import com.example.dto.request.PostCommentRequest;
 import com.example.dto.request.PostCreateRequest;
 import com.example.dto.request.PostModifyRequest;
+import com.example.dto.response.CommentResponse;
 import com.example.dto.response.PostResponse;
 import com.example.dto.response.Response;
+import com.example.model.Comment;
 import com.example.model.Post;
 import com.example.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -51,15 +54,27 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/likes")
-    public Response<Void> like(@PathVariable Integer postId, Authentication authentication){
+    public Response<Void> like(@PathVariable Integer postId, Authentication authentication) {
         postService.like(postId, authentication.getName());
 
         return Response.success();
     }
 
     @GetMapping("/{postId}/likes")
-    public Response<Integer> likeCount(@PathVariable Integer postId, Authentication authentication){
+    public Response<Integer> likeCount(@PathVariable Integer postId, Authentication authentication) {
         return Response.success(postService.likeCount(postId));
+    }
+
+    @PostMapping("/{postId}/comments")
+    public Response<Void> comment(@PathVariable Integer postId, @RequestBody PostCommentRequest request, Authentication authentication) {
+        postService.comment(postId, authentication.getName(), request.getComment());
+
+        return Response.success();
+    }
+
+    @GetMapping("/{postId}/comments")
+    public Response<Page<CommentResponse>> comment(@PathVariable Integer postId, Pageable pageable, Authentication authentication) {
+        return Response.success(postService.getComments(postId, pageable).map(CommentResponse::fromComment));
     }
 
 }

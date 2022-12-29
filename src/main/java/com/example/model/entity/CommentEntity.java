@@ -12,26 +12,27 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "\"post\"", indexes = {
-        @Index(name = "user_id_idx", columnList = "user_id")
+@Table(name = "\"comment\"", indexes = {
+        @Index(name = "post_id_idx", columnList = "post_id")
 })
-@SQLDelete(sql = "UPDATE \"post\" SET deleted_at = NOW() WHERE id=?")
+@SQLDelete(sql = "UPDATE \"comment\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
-public class PostEntity {
+public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "title")
-    private String title;
-
-    @Column(name = "body", columnDefinition = "TEXT")
-    private String body;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private PostEntity post;
+
+    @Column(name = "comment")
+    private String comment;
 
     @Column(name = "registered_at")
     private Timestamp registeredAt;
@@ -48,12 +49,11 @@ public class PostEntity {
     @PreUpdate
     void updatedAt() { this.updatedAt = Timestamp.from(Instant.now());}
 
-    public static PostEntity of(String title, String body, UserEntity userEntity){
-        PostEntity entity = new PostEntity();
-        entity.setTitle(title);
-        entity.setBody(body);
+    public static CommentEntity of(UserEntity userEntity, PostEntity postEntity, String comment){
+        CommentEntity entity = new CommentEntity();
         entity.setUser(userEntity);
-
+        entity.setPost(postEntity);
+        entity.setComment(comment);
         return entity;
     }
 
