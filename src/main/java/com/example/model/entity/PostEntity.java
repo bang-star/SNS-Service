@@ -12,7 +12,9 @@ import java.time.Instant;
 @Setter
 @Getter
 @Entity
-@Table(name = "\"post\"")
+@Table(name = "\"post\"", indexes = {
+        @Index(name = "user_id_idx", columnList = "user_id")
+})
 @SQLDelete(sql = "UPDATE \"post\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
 public class PostEntity {
