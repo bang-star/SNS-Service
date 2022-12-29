@@ -4,9 +4,9 @@ import com.example.model.entity.UserEntity;
 
 public class UserEntityFixture {
 
-    public static UserEntity get(String username, String password, Integer userId){
+    public static UserEntity get(String username, String password){
         UserEntity result = new UserEntity();
-        result.setId(userId);
+        result.setId(1);
         result.setUsername(username);
         result.setPassword(password);
 

@@ -1,11 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.request.PostCreateRequest;
-import com.example.dto.request.PostModifyRequest;
-import com.example.exception.ErrorCode;
-import com.example.exception.SnsApplicationException;
-import com.example.fixture.PostEntityFixture;
-import com.example.model.Post;
+import com.example.dto.request.UserJoinRequest;
 import com.example.service.PostService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -18,12 +14,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,66 +52,5 @@ class PostControllerTest {
                         .content(objectMapper.writeValueAsBytes(PostCreateRequest.of(title, body)))
                 ).andDo(print())
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void 포스트수정() throws Exception {
-        String title = "title";
-        String body = "body";
-        String username = "username";
-        Integer postId = 1;
-        Integer userId = 1;
-
-        when(postService.modify(eq(title), eq(body), any(), any())).thenReturn(Post.fromEntity(PostEntityFixture.get(username, postId, userId)));
-
-        mvc.perform(put("/api/v1/posts/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(PostModifyRequest.of(title, body)))
-                ).andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithAnonymousUser
-    void 포스트수정시_로그인하지않은경우() throws Exception {
-        String title = "title";
-        String body = "body";
-
-        mvc.perform(put("/api/v1/posts/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(PostModifyRequest.of(title, body)))
-                ).andDo(print())
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithAnonymousUser
-    void 포스트수정시_본인이_작성한_글이_아닌경우_에러발생() throws Exception {
-        String title = "title";
-        String body = "body";
-
-        doThrow(new SnsApplicationException(ErrorCode.INVALID_PERMISSION)).when(postService).modify(eq(title), eq(body), any(), eq(1));
-
-        mvc.perform(put("/api/v1/posts/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(PostModifyRequest.of(title, body)))
-                ).andDo(print())
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    void 포스트수정시_수정하려는_글이_존재하지않은경우_에러발생() throws Exception {
-        String title = "title";
-        String body = "body";
-
-        doThrow(new SnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).modify(eq(title), eq(body), any(), eq(1));
-
-        mvc.perform(put("/api/v1/posts/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(new PostModifyRequest(title, body)))
-                ).andDo(print())
-                .andExpect(status().isNotFound());
     }
 }
