@@ -1,5 +1,6 @@
 package com.example.model.entity;
 
+import com.example.model.User;
 import com.example.model.UserRole;
 import lombok.Getter;
 import lombok.Setter;
