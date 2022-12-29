@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.dto.request.PostCommentRequest;
 import com.example.dto.request.PostCreateRequest;
 import com.example.dto.request.PostModifyRequest;
 import com.example.exception.ErrorCode;
@@ -257,4 +258,43 @@ class PostControllerTest {
                 ).andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @WithMockUser
+    void 댓글기능() throws Exception {
+        String comment = "comment";
+
+        mvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of(comment)))
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 댓글작성시_로그인하지_않은경우() throws Exception {
+        String comment = "comment";
+
+        mvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of(comment)))
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글작성시_게시물이_없는경우() throws Exception {
+        String comment = "comment";
+
+        doThrow(new SnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).comment(any(), any(), any());
+
+        mvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(PostCommentRequest.of(comment)))
+                ).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
 }
