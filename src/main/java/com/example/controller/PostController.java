@@ -1,12 +1,14 @@
 package com.example.controller;
 
-import com.example.model.Post;
 import com.example.dto.request.PostCreateRequest;
 import com.example.dto.request.PostModifyRequest;
 import com.example.dto.response.PostResponse;
 import com.example.dto.response.Response;
+import com.example.model.Post;
 import com.example.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,4 +39,15 @@ public class PostController {
 
         return Response.success();
     }
+
+    @GetMapping
+    public Response<Page<PostResponse>> list(Pageable pageable, Authentication authentication) {
+        return Response.success(postService.list(pageable).map(PostResponse::fromPost));
+    }
+
+    @GetMapping("/my")
+    public Response<Page<PostResponse>> myPost(Pageable pageable, Authentication authentication) {
+        return Response.success(postService.mypost(authentication.getName(), pageable).map(PostResponse::fromPost));
+    }
+
 }
