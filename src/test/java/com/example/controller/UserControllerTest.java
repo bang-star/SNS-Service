@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired private MockMvc mvc;
     @Autowired private ObjectMapper objectMapper;
@@ -31,7 +31,7 @@ public class UserControllerTest {
     @MockBean private UserService userService;
 
     @Test
-    public void 회원가입() throws Exception {
+    void 회원가입() throws Exception {
         String username = "username";
         String password = "password";
 
@@ -46,7 +46,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void 회원가입시_이미_회원가입된_username으로_회원가입을_하는경우_에러반환() throws Exception{
+    void 회원가입시_이미_회원가입된_username으로_회원가입을_하는경우_에러반환() throws Exception{
         String username = "username";
         String password = "password";
 
@@ -61,7 +61,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void 로그인() throws Exception {
+    void 로그인() throws Exception {
         String username = "username";
         String password = "password";
 
@@ -76,7 +76,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void 로그인시_회원가입이_안된_username_입력할경우_에러반환() throws Exception {
+    void 로그인시_회원가입이_안된_username_입력할경우_에러반환() throws Exception {
         String username = "username";
         String password = "password";
 
@@ -91,7 +91,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void 로그인시_틀린_password를_입력한경우_에러반환() throws Exception {
+    void 로그인시_틀린_password를_입력한경우_에러반환() throws Exception {
         String username = "username";
         String password = "password";
 
