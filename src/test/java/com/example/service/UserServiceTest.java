@@ -4,17 +4,21 @@ import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
 import com.example.fixture.UserEntityFixture;
 import com.example.model.entity.UserEntity;
+import com.example.repository.AlarmEntityRepository;
 import com.example.repository.UserEntityRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -23,6 +27,7 @@ class UserServiceTest {
     @Autowired private UserService userService;
 
     @MockBean private UserEntityRepository userEntityRepository;
+    @MockBean private AlarmEntityRepository alarmEntityRepository;
     @MockBean private BCryptPasswordEncoder encoder;
 
     @Test
@@ -93,4 +98,18 @@ class UserServiceTest {
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> userService.login(username, wrongPassword));
         Assertions.assertEquals(ErrorCode.INVALID_PASSWORD, e.getErrorCode());
     }
+
+    @Test
+    void 알람리스트요청_정상적으로_동작하는_경우(){
+        String username = "username";
+        Pageable pageable = mock(Pageable.class);
+        UserEntity fixture = UserEntityFixture.get(username, "", 1);
+
+        //mocking
+        when(userEntityRepository.findByUsername(username)).thenReturn(Optional.of(fixture));
+        when(alarmEntityRepository.findAllByUser(fixture, pageable)).thenReturn(Page.empty());
+
+        Assertions.assertDoesNotThrow(() -> userService.alarmList(username, pageable));
+    }
+
 }

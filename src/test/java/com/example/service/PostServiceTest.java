@@ -4,14 +4,13 @@ import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
 import com.example.fixture.PostEntityFixture;
 import com.example.fixture.UserEntityFixture;
-import com.example.model.entity.CommentEntity;
+import com.example.model.AlarmArgs;
+import com.example.model.AlarmType;
+import com.example.model.entity.AlarmEntity;
 import com.example.model.entity.LikeEntity;
 import com.example.model.entity.PostEntity;
 import com.example.model.entity.UserEntity;
-import com.example.repository.CommentEntityRepository;
-import com.example.repository.LikeEntityRepository;
-import com.example.repository.PostEntityRepository;
-import com.example.repository.UserEntityRepository;
+import com.example.repository.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class PostServiceTest {
@@ -38,6 +38,7 @@ class PostServiceTest {
     @MockBean private UserEntityRepository userEntityRepository;
     @MockBean private LikeEntityRepository likeEntityRepository;
     @MockBean private CommentEntityRepository commentEntityRepository;
+    @MockBean private AlarmEntityRepository alarmEntityRepository;
 
     @Test
     void 포스트작성이_성공한경우() {
@@ -287,6 +288,37 @@ class PostServiceTest {
         when(commentEntityRepository.findAllByPost(post, pageable)).thenReturn(Page.empty());
 
         Assertions.assertDoesNotThrow(() -> postService.getComments(postId, pageable));
+    }
+
+    @Test
+    void 알림_댓글생성시_알림메시지전달이_성공한경우(){
+        Integer postId = 1;
+        String comment = "comment";
+        UserEntity user = mock(UserEntity.class);
+        PostEntity post = mock(PostEntity.class);
+        AlarmEntity alarm = mock(AlarmEntity.class);
+
+        when(userEntityRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(alarmEntityRepository.save(AlarmEntity.of(post.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(user.getId(), post.getId()))))
+                .thenReturn(alarm);
+
+        Assertions.assertDoesNotThrow(() -> postService.comment(postId, "username", comment));
+    }
+
+    @Test
+    void 알림_좋아요버튼클릭시_알림메시지전달이_성공한경우(){
+        Integer postId = 1;
+        String comment = "comment";
+        UserEntity user = mock(UserEntity.class);
+        PostEntity post = mock(PostEntity.class);
+        AlarmEntity alarm = mock(AlarmEntity.class);
+
+        when(userEntityRepository.findByUsername(any())).thenReturn(Optional.of(user));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(alarmEntityRepository.save(AlarmEntity.of(post.getUser(), AlarmType.NEW_LIKE_ONE_POST, new AlarmArgs(user.getId(), post.getId())))).thenReturn(alarm);
+
+        Assertions.assertDoesNotThrow(() -> postService.comment(postId, "username", comment));
     }
 
 }
