@@ -76,9 +76,9 @@ public class PostService {
 
     @Transactional
     public void like(Integer postId, String username){
-        UserEntity userEntity = getUserEntityOrException(username);
-
+        // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
+        UserEntity userEntity = getUserEntityOrException(username);
 
         // check liked -> throw
         likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
