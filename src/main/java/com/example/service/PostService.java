@@ -2,16 +2,12 @@ package com.example.service;
 
 import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
+import com.example.model.AlarmArgs;
+import com.example.model.AlarmType;
 import com.example.model.Comment;
 import com.example.model.Post;
-import com.example.model.entity.CommentEntity;
-import com.example.model.entity.LikeEntity;
-import com.example.model.entity.PostEntity;
-import com.example.model.entity.UserEntity;
-import com.example.repository.CommentEntityRepository;
-import com.example.repository.LikeEntityRepository;
-import com.example.repository.PostEntityRepository;
-import com.example.repository.UserEntityRepository;
+import com.example.model.entity.*;
+import com.example.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +22,7 @@ public class PostService {
     private final UserEntityRepository userEntityRepository;
     private final LikeEntityRepository likeEntityRepository;
     private final CommentEntityRepository commentEntityRepository;
+    private final AlarmEntityRepository alarmEntityRepository;
 
     @Transactional
     public void create(String title, String body, String username){
@@ -90,6 +87,7 @@ public class PostService {
 
         // like save
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
+        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_LIKE_ONE_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
     @Transactional
@@ -113,6 +111,7 @@ public class PostService {
 
         // comment save
         commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
+        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
 
