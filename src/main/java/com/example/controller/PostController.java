@@ -6,7 +6,6 @@ import com.example.dto.request.PostModifyRequest;
 import com.example.dto.response.CommentResponse;
 import com.example.dto.response.PostResponse;
 import com.example.dto.response.Response;
-import com.example.model.Comment;
 import com.example.model.Post;
 import com.example.service.PostService;
 import lombok.RequiredArgsConstructor;
