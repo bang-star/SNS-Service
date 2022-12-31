@@ -2,10 +2,7 @@ package com.example.service;
 
 import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
-import com.example.model.AlarmArgs;
-import com.example.model.AlarmType;
-import com.example.model.Comment;
-import com.example.model.Post;
+import com.example.model.*;
 import com.example.model.entity.*;
 import com.example.repository.*;
 import lombok.AllArgsConstructor;
@@ -25,22 +22,21 @@ public class PostService {
     private final AlarmEntityRepository alarmEntityRepository;
 
     @Transactional
-    public void create(String title, String body, String username){
-        UserEntity userEntity = getUserEntityOrException(username);
-
+    public void create(String title, String body, User user){
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
         postEntityRepository.save(PostEntity.of(title, body, userEntity));
     }
 
     @Transactional
-    public Post modify(String title, String body, String username, Integer postId){
-        UserEntity userEntity = getUserEntityOrException(username);
+    public Post modify(String title, String body, User user, Integer postId){
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
 
         // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
 
         // post permission
         if (postEntity.getUser() != userEntity) {
-            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", username, postId));
+            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", user.getUsername(), postId));
         }
 
         postEntity.setTitle(title);
@@ -50,15 +46,16 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(String username, Integer postId){
-        UserEntity userEntity = getUserEntityOrException(username);
-
+    public void delete(User user, Integer postId){
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
         PostEntity postEntity = getPostEntityOrException(postId);
 
         if (postEntity.getUser() != userEntity) {
-            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", username, postId));
+            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", user.getUsername(), postId));
         }
 
+        likeEntityRepository.deleteAllByPost(postEntity);
+        commentEntityRepository.deleteAllByPost(postEntity);
         postEntityRepository.delete(postEntity);
     }
 
@@ -68,21 +65,21 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Post> mypost(String username, Pageable pageable) {
-        UserEntity userEntity = getUserEntityOrException(username);
+    public Page<Post> mypost(User user, Pageable pageable) {
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
 
         return postEntityRepository.findAllByUser(userEntity, pageable).map(Post::fromEntity);
     }
 
     @Transactional
-    public void like(Integer postId, String username){
-        UserEntity userEntity = getUserEntityOrException(username);
-
+    public void like(Integer postId, User user){
+        // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
 
         // check liked -> throw
         likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
-            throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("%s already liked post %d", username, postId));
+            throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("%s already liked post %d", user.getUsername(), postId));
         });
 
         // like save
@@ -91,7 +88,7 @@ public class PostService {
     }
 
     @Transactional
-    public int likeCount(Integer postId){
+    public long likeCount(Integer postId){
         PostEntity postEntity = getPostEntityOrException(postId);
 
         // count like
@@ -104,8 +101,8 @@ public class PostService {
     }
 
     @Transactional
-    public void comment(Integer postId, String username, String comment) {
-        UserEntity userEntity = getUserEntityOrException(username);
+    public void comment(Integer postId, User user, String comment) {
+        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
 
         PostEntity postEntity = getPostEntityOrException(postId);
 
