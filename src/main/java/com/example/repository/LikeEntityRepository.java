@@ -17,5 +17,9 @@ public interface LikeEntityRepository extends JpaRepository<LikeEntity, Long> {
 
     long countByPost(PostEntity post);
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE LikeEntity entity SET deleted_at = NOW() WHERE entity.post = :post")
+    void deleteAllByPost(@Param("post") PostEntity post);
 
 }
