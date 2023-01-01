@@ -91,12 +91,6 @@ public class PostService {
     public long likeCount(Integer postId){
         PostEntity postEntity = getPostEntityOrException(postId);
 
-        // count like
-        // AS-IS
-        // List<LikeEntity> likeEntities = likeEntityRepository.findAllByPost(postEntity);
-        // return likeEntities.size();
-
-        // TO-BE
         return likeEntityRepository.countByPost(postEntity);
     }
 
