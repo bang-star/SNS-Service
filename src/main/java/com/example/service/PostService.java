@@ -20,23 +20,24 @@ public class PostService {
     private final LikeEntityRepository likeEntityRepository;
     private final CommentEntityRepository commentEntityRepository;
     private final AlarmEntityRepository alarmEntityRepository;
+    private final AlarmService alarmService;
 
     @Transactional
-    public void create(String title, String body, User user){
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
+    public void create(String title, String body, String username){
+        UserEntity userEntity = getUserEntityOrException(username);
         postEntityRepository.save(PostEntity.of(title, body, userEntity));
     }
 
     @Transactional
-    public Post modify(String title, String body, User user, Integer postId){
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
+    public Post modify(String title, String body, String username, Integer postId){
+        UserEntity userEntity = getUserEntityOrException(username);
 
         // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
 
         // post permission
         if (postEntity.getUser() != userEntity) {
-            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", user.getUsername(), postId));
+            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", username, postId));
         }
 
         postEntity.setTitle(title);
@@ -46,12 +47,12 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(User user, Integer postId){
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
+    public void delete(String username, Integer postId){
+        UserEntity userEntity = getUserEntityOrException(username);
         PostEntity postEntity = getPostEntityOrException(postId);
 
         if (postEntity.getUser() != userEntity) {
-            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", user.getUsername(), postId));
+            throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", username, postId));
         }
 
         likeEntityRepository.deleteAllByPost(postEntity);
@@ -65,26 +66,28 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Post> mypost(User user, Pageable pageable) {
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
+    public Page<Post> mypost(String username, Pageable pageable) {
+        UserEntity userEntity = getUserEntityOrException(username);
 
         return postEntityRepository.findAllByUser(userEntity, pageable).map(Post::fromEntity);
     }
 
     @Transactional
-    public void like(Integer postId, User user){
+    public void like(Integer postId, String username){
         // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
+        UserEntity userEntity = getUserEntityOrException(username);
 
         // check liked -> throw
         likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
-            throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("%s already liked post %d", user.getUsername(), postId));
+            throw new SnsApplicationException(ErrorCode.ALREADY_LIKED, String.format("%s already liked post %d", username, postId));
         });
 
         // like save
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
-        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_LIKE_ONE_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+
+        alarmService.send(alarmEntity.getId(), userEntity.getId());
     }
 
     @Transactional
@@ -95,14 +98,15 @@ public class PostService {
     }
 
     @Transactional
-    public void comment(Integer postId, User user, String comment) {
-        UserEntity userEntity = UserEntity.of(user.getUsername(), user.getPassword());
-
+    public void comment(Integer postId, String username, String comment) {
+        UserEntity userEntity = getUserEntityOrException(username);
         PostEntity postEntity = getPostEntityOrException(postId);
 
         // comment save
         commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
-        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+
+        alarmService.send(alarmEntity.getId(), userEntity.getId());
     }
 
 

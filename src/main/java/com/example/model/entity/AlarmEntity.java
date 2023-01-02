@@ -19,7 +19,7 @@ import java.time.Instant;
 @Entity
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 @Table(name = "\"alarm\"", indexes = {
-        @Index(name = "user_id_idx_alarm", columnList = "user_id")
+        @Index(name = "user_id_idx", columnList = "user_id")
 })
 @SQLDelete(sql = "UPDATE \"alarm\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
