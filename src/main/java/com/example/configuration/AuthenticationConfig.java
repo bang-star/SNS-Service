@@ -27,7 +27,7 @@ public class AuthenticationConfig extends WebSecurityConfigurerAdapter {
         // /api/로 시작되는 놈들만 검사하도록 함.
         web.ignoring()
                 .regexMatchers("^(?!/api/).*")
-                .antMatchers(HttpMethod.POST, "/api/*/user/join", "/api/*/users/login")
+                .antMatchers(HttpMethod.POST, "/api/*/users/join", "/api/*/users/login")
         ;
     }
 
