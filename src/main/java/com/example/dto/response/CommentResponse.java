@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 public class CommentResponse {
     private Integer id;
     private String comment;
-    private String username;
+    private String userName;
     private Integer postId;
     private Timestamp registeredAt;
     private Timestamp updatedAt;
