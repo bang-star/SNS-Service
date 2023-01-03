@@ -27,6 +27,7 @@ jobs:
           token: ${{ secrets.CLOUDTYPE_TOKEN }}
           project: sns
           stage: main
+          file: ./.cloudtype/app.yaml
           yaml: |-
             name: sns-service
             app: java@17

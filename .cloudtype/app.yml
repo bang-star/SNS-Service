@@ -1,0 +1,23 @@
+name: fastcampus-project-board
+app: java@17
+options:
+  buildenv:
+    - name: ${REDIS_URL}
+      value: ${REDIS_URL}
+    - name: ${DB_URL}
+      value: ${DB_URL}
+    - name: ${DB_USERNAME}
+      value: ${DB_USERNAME}
+    - name: ${DB_PASSWORD}
+      value: ${DB_PASSWORD}
+    - name: ${JWT_KEY}
+      value: ${JWT_KEY}
+    - name: ${JWT_EXPIRED_TIME_MS}
+      value: ${JWT_EXPIRED_TIME_MS}
+    - name: ${KAFKA_HOST}
+      value: ${KAFKA_HOST}
+
+context:
+  git:
+    url: https://github.com/bang-star/SNS-Service
+    branch: main
