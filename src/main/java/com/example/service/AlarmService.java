@@ -2,13 +2,20 @@ package com.example.service;
 
 import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
+import com.example.model.AlarmArgs;
+import com.example.model.AlarmType;
+import com.example.model.entity.AlarmEntity;
+import com.example.model.entity.UserEntity;
+import com.example.repository.AlarmEntityRepository;
 import com.example.repository.EmitterRepository;
+import com.example.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,13 +26,20 @@ public class AlarmService {
     private final static String ALARM_NAME = "alarm";
 
     private final EmitterRepository emitterRepository;
+    private final AlarmEntityRepository alarmEntityRepository;
+    private final UserEntityRepository userEntityRepository;
 
-    public void send(Integer alarmId, Integer userId) {
-        emitterRepository.get(userId).ifPresentOrElse(sseEmitter -> {
+    public void send(AlarmType type, AlarmArgs args, Integer receiverUserId) {
+        UserEntity user = userEntityRepository.findById(receiverUserId).orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND));
+
+        // alarm save
+        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(user, type, args));
+
+        emitterRepository.get(receiverUserId).ifPresentOrElse(sseEmitter -> {
             try {
-                sseEmitter.send(SseEmitter.event().id(alarmId.toString()).name(ALARM_NAME).data("new alarm"));
+                sseEmitter.send(SseEmitter.event().id(alarmEntity.getId().toString()).name(ALARM_NAME).data("new alarm"));
             } catch (IOException e) {
-                emitterRepository.delete(userId);
+                emitterRepository.delete(receiverUserId);
                 throw new SnsApplicationException(ErrorCode.ALARM_CONNECT_ERROR);
             }
         }, () -> log.info("No emitter founded"));
