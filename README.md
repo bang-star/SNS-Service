@@ -2,7 +2,7 @@
 
 ## Application Architecture
 
-<img src="https://user-images.githubusercontent.com/63120360/210037230-7f736257-12f3-4809-9791-91892b1ded78.png">
+<img src="https://user-images.githubusercontent.com/63120360/210344610-92f1c63c-f561-4e09-9953-0ce9a268c6cc.png">
 
 ## Flow Chart
 
@@ -77,7 +77,7 @@
 <br />
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/63120360/210037671-2819c7ae-ee90-4a29-a3ff-319540fa0080.png" alt="text" width="number" />
+  <img src="https://user-images.githubusercontent.com/63120360/210346547-52e74c35-a14a-4aa8-8e17-6656f09257d5.png" alt="text" width="number" />
 </p>
 
 <br />
@@ -88,7 +88,7 @@
 <br />
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/63120360/210037725-1dca66ab-9d17-4b32-b383-e02dd2eb8324.png" alt="text" width="number" />
+  <img src="https://user-images.githubusercontent.com/63120360/210346414-8ed18dc5-a199-4c1f-a127-3eecbebd5a33.png" alt="text" width="number" />
 </p>
 
 <br />
