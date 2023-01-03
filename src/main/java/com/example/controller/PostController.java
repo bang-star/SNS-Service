@@ -6,9 +6,13 @@ import com.example.dto.request.PostModifyRequest;
 import com.example.dto.response.CommentResponse;
 import com.example.dto.response.PostResponse;
 import com.example.dto.response.Response;
-import com.example.model.Comment;
+import com.example.exception.ErrorCode;
+import com.example.exception.SnsApplicationException;
 import com.example.model.Post;
+import com.example.model.User;
+import com.example.model.entity.UserEntity;
 import com.example.service.PostService;
+import com.example.utils.ClassUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +49,7 @@ public class PostController {
 
     @GetMapping
     public Response<Page<PostResponse>> list(Pageable pageable, Authentication authentication) {
+
         return Response.success(postService.list(pageable).map(PostResponse::fromPost));
     }
 
@@ -61,7 +66,7 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/likes")
-    public Response<Integer> likeCount(@PathVariable Integer postId, Authentication authentication) {
+    public Response<Long> likeCount(@PathVariable Integer postId, Authentication authentication) {
         return Response.success(postService.likeCount(postId));
     }
 

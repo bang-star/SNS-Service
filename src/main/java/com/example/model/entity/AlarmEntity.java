@@ -18,8 +18,8 @@ import java.time.Instant;
 @Getter
 @Entity
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
-@Table(name = "\"alram\"", indexes = {
-        @Index(name = "user_id_idx_alarm", columnList = "user_id")
+@Table(name = "\"alarm\"", indexes = {
+        @Index(name = "user_id_idx", columnList = "user_id")
 })
 @SQLDelete(sql = "UPDATE \"alarm\" SET deleted_at = NOW() WHERE id=?")
 @Where(clause = "deleted_at is NULL")
@@ -29,7 +29,7 @@ public class AlarmEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;        // 알람을 받은 사람
 

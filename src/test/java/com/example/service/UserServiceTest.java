@@ -107,9 +107,9 @@ class UserServiceTest {
 
         //mocking
         when(userEntityRepository.findByUsername(username)).thenReturn(Optional.of(fixture));
-        when(alarmEntityRepository.findAllByUser(fixture, pageable)).thenReturn(Page.empty());
+        when(alarmEntityRepository.findAllByUserId(fixture.getId(), pageable)).thenReturn(Page.empty());
 
-        Assertions.assertDoesNotThrow(() -> userService.alarmList(username, pageable));
+        Assertions.assertDoesNotThrow(() -> userService.alarmList(fixture.getId(), pageable));
     }
 
 }

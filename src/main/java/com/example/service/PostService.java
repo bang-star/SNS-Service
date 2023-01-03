@@ -2,11 +2,10 @@ package com.example.service;
 
 import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
-import com.example.model.AlarmArgs;
-import com.example.model.AlarmType;
-import com.example.model.Comment;
-import com.example.model.Post;
+import com.example.model.*;
 import com.example.model.entity.*;
+import com.example.model.event.AlarmEvent;
+import com.example.producer.AlarmProducer;
 import com.example.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,11 +22,12 @@ public class PostService {
     private final LikeEntityRepository likeEntityRepository;
     private final CommentEntityRepository commentEntityRepository;
     private final AlarmEntityRepository alarmEntityRepository;
+    private final AlarmService alarmService;
+    private final AlarmProducer alarmProducer;
 
     @Transactional
     public void create(String title, String body, String username){
         UserEntity userEntity = getUserEntityOrException(username);
-
         postEntityRepository.save(PostEntity.of(title, body, userEntity));
     }
 
@@ -52,13 +52,14 @@ public class PostService {
     @Transactional
     public void delete(String username, Integer postId){
         UserEntity userEntity = getUserEntityOrException(username);
-
         PostEntity postEntity = getPostEntityOrException(postId);
 
         if (postEntity.getUser() != userEntity) {
             throw new SnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("%s has no permission with %s", username, postId));
         }
 
+        likeEntityRepository.deleteAllByPost(postEntity);
+        commentEntityRepository.deleteAllByPost(postEntity);
         postEntityRepository.delete(postEntity);
     }
 
@@ -76,9 +77,9 @@ public class PostService {
 
     @Transactional
     public void like(Integer postId, String username){
-        UserEntity userEntity = getUserEntityOrException(username);
-
+        // post exist
         PostEntity postEntity = getPostEntityOrException(postId);
+        UserEntity userEntity = getUserEntityOrException(username);
 
         // check liked -> throw
         likeEntityRepository.findByUserAndPost(userEntity, postEntity).ifPresent(it -> {
@@ -87,31 +88,24 @@ public class PostService {
 
         // like save
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
-        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_LIKE_ONE_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+        alarmProducer.send(new AlarmEvent(postEntity.getUser().getId(), AlarmType.NEW_LIKE_ONE_POST,  new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
     @Transactional
-    public int likeCount(Integer postId){
+    public long likeCount(Integer postId){
         PostEntity postEntity = getPostEntityOrException(postId);
 
-        // count like
-        // AS-IS
-        // List<LikeEntity> likeEntities = likeEntityRepository.findAllByPost(postEntity);
-        // return likeEntities.size();
-
-        // TO-BE
         return likeEntityRepository.countByPost(postEntity);
     }
 
     @Transactional
     public void comment(Integer postId, String username, String comment) {
         UserEntity userEntity = getUserEntityOrException(username);
-
         PostEntity postEntity = getPostEntityOrException(postId);
 
         // comment save
         commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
-        alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
+        alarmProducer.send(new AlarmEvent(postEntity.getUser().getId(), AlarmType.NEW_COMMENT_ON_POST,  new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
 

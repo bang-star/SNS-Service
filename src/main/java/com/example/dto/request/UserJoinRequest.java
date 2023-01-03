@@ -7,10 +7,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserJoinRequest {
 
-    private String username;
+    private String name;
     private String password;
 
-    public static UserJoinRequest of(String username, String password) {
-        return new UserJoinRequest(username, password);
+    public static UserJoinRequest of(String name, String password) {
+        return new UserJoinRequest(name, password);
     }
 }
