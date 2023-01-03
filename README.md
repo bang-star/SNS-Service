@@ -1,5 +1,30 @@
 # SNS-Service
 
+## 개발 환경
+
+* Intellij IDEA Ultimate 2022.1.1 ~ 2022.1.3
+* Java 17
+* Gradle 7.4.1
+* Spring Boot 2.7.5
+
+## 기술 세부 스택
+
+Spring Boot
+
+* Spring Web
+* Spring Data JPA
+* Spring Security
+* Hibernate-types
+* PostgresSQL Driver
+* Lombok
+* Apache Kafka
+* jwt
+* Redis
+
+그 외
+
+* CloudType
+
 ## Application Architecture
 
 <img src="https://user-images.githubusercontent.com/63120360/210344610-92f1c63c-f561-4e09-9953-0ce9a268c6cc.png">
