@@ -18,3 +18,21 @@ jwt:
   token.expired-time-ms: ${JWT_EXPIRED_TIME_MS}
 
 spring.redis.url: ${REDIS_URL}
+
+spring:
+  kafka:
+      consumer:
+        properties.spring.json.trusted.packages: "*"
+        bootstrap-servers: ${KAFKA_HOST}
+        group-id: alarm
+        auto-offset-reset: latest
+        key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      listener:
+        ack-mode: MANUAL
+      producer:
+        bootstrap-servers: ${KAFKA_HOST}
+        key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      topic:
+        alarm: alarm

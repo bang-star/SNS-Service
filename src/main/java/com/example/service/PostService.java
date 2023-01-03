@@ -4,6 +4,8 @@ import com.example.exception.ErrorCode;
 import com.example.exception.SnsApplicationException;
 import com.example.model.*;
 import com.example.model.entity.*;
+import com.example.model.event.AlarmEvent;
+import com.example.producer.AlarmProducer;
 import com.example.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ public class PostService {
     private final CommentEntityRepository commentEntityRepository;
     private final AlarmEntityRepository alarmEntityRepository;
     private final AlarmService alarmService;
+    private final AlarmProducer alarmProducer;
 
     @Transactional
     public void create(String title, String body, String username){
@@ -85,9 +88,7 @@ public class PostService {
 
         // like save
         likeEntityRepository.save(LikeEntity.of(userEntity, postEntity));
-        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
-
-        alarmService.send(alarmEntity.getId(), userEntity.getId());
+        alarmProducer.send(new AlarmEvent(postEntity.getUser().getId(), AlarmType.NEW_LIKE_ONE_POST,  new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
     @Transactional
@@ -104,9 +105,7 @@ public class PostService {
 
         // comment save
         commentEntityRepository.save(CommentEntity.of(userEntity, postEntity, comment));
-        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(postEntity.getUser(), AlarmType.NEW_COMMENT_ON_POST, new AlarmArgs(userEntity.getId(), postEntity.getId())));
-
-        alarmService.send(alarmEntity.getId(), userEntity.getId());
+        alarmProducer.send(new AlarmEvent(postEntity.getUser().getId(), AlarmType.NEW_COMMENT_ON_POST,  new AlarmArgs(userEntity.getId(), postEntity.getId())));
     }
 
 
