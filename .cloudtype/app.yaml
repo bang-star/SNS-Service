@@ -1,4 +1,4 @@
-name: fastcampus-project-board
+name: sns-service
 app: java@17
 options:
   buildenv:
